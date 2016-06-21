@@ -446,13 +446,10 @@ class Client {
 
     try
     {
-        $this->guzzlePoster($data);
+      $this->guzzlePoster($data);
 
-        $job->delete();
-
-        $isMessageSent = true;
+      $job->delete();
     }
-
     catch(ClientException $e)
     {
         $job->release(self::RELEASE_WAIT_TIMEOUT);
