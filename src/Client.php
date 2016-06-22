@@ -449,10 +449,7 @@ class Client {
     try
     {
         $this->messagePoster($data);
-
         $job->delete();
-
-        $isMessageSent = true;
     }
     catch(ClientException $e)
     {
