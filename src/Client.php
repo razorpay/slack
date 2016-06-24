@@ -441,19 +441,22 @@ class Client {
    */
   public function fire($job, array $data)
   {
-    if($job->attempts() >= $data['num_retries'])
+    if($job->attempts() >= $data['metadata']['num_retries'])
     {
         $job->delete();
     }
+    else
+    {
+      try
+      {
+          $this->messagePoster($data);
 
-    try
-    {
-        $this->messagePoster($data);
-        $job->delete();
-    }
-    catch(ClientException $e)
-    {
-        $job->release(self::RELEASE_WAIT_TIMEOUT);
+          $job->delete();
+      }
+      catch(ClientException $e)
+      {
+          $job->release(self::RELEASE_WAIT_TIMEOUT);
+      }
     }
   }
 
@@ -477,7 +480,7 @@ class Client {
 
     if($numRetries)
     {
-        $payload['num_retries'] = $numRetries;
+        $payload['metadata'] = ['num_retries' => $numRetries];
     }
 
     if ($icon = $message->getIcon())
