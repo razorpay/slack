@@ -2,6 +2,7 @@
 
 use GuzzleHttp\Client as Guzzle;
 use Illuminate\Queue\Capsule\Manager as Queue;
+use GuzzleHttp\Exception\ClientException;
 
 class Client {
 
@@ -86,6 +87,30 @@ class Client {
   protected $queue;
 
   /**
+   * Slack Enable mode
+   * @var boolean
+   */
+  protected $slackStatus = true;
+
+
+  /**
+   * Queue wait timeout on releasing the job. Ideally, for a more complicated scenario
+   * the wait timeout could increase based on the number of failures. But we
+   * are not handling such cases here.
+   *
+   * @var integer
+   */
+  const RELEASE_WAIT_TIMEOUT = 10;
+
+  /**
+   * Number of retries before giving up on the job.
+   *
+   * @var integer
+   */
+  const MAX_RETRY_ATTEMPTS = 10;
+
+
+  /**
    * Instantiate a new Client
    *
    * @param string $endpoint
@@ -112,12 +137,16 @@ class Client {
 
     if (isset($attributes['markdown_in_attachments'])) $this->setMarkdownInAttachments($attributes['markdown_in_attachments']);
 
+    if(isset($attributes['is_slack_enabled'])) $this->setSlackStatus($attributes['is_slack_enabled']);
+
     $this->guzzle = $guzzle ?: new Guzzle;
 
     $this->queue = $queue;
 
     if($this->queue !== null)
       $this->queue->setAsGlobal();
+
+    $this->maxRetryAttempts = self::MAX_RETRY_ATTEMPTS;
   }
 
   /**
@@ -342,6 +371,27 @@ class Client {
   }
 
   /**
+   * Set whether slack mode is enabled/disabled
+   *
+   * @param boolean $status
+   * @return void
+   */
+  public function setSlackStatus($status)
+  {
+    $this->slackStatus = $status;
+  }
+
+  /**
+   * Gets the current slack mode - enabled/disabled
+   *
+   * @return boolean
+   */
+  public function getSlackStatus()
+  {
+    return $this->slackStatus;
+  }
+
+  /**
    * Create a new message with defaults
    *
    * @return \Maknz\Slack\Message
@@ -364,6 +414,22 @@ class Client {
   }
 
   /**
+   * Actually send the message
+   * @param  array            $data                 Slack Payload
+   * @return void
+   * @throws GuzzleHttp\Exception\ClientException   throws exception due to network errors. The client/caller
+   *                                                needs to handle this as the resulting behavior might be
+   *                                                different for different client calls between syncronous and
+   *                                                asynchronous calls
+   */
+  protected function messagePoster($data)
+  {
+    $encoded = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+    $this->guzzle->post($this->endpoint, ['body' => $encoded]);
+  }
+
+  /**
    * Send a message
    *
    * @param \Maknz\Slack\Message $message
@@ -373,9 +439,7 @@ class Client {
   {
     $payload = $this->preparePayload($message);
 
-    $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
-
-    $this->guzzle->post($this->endpoint, ['body' => $encoded]);
+    $this->messagePoster($payload);
   }
 
   /**
@@ -384,9 +448,17 @@ class Client {
    * @param \Maknz\Slack\Message $message
    * @return void
    */
-  public function queueMessage(Message $message)
+  public function queueMessage(Message $message, $numRetries = self::MAX_RETRY_ATTEMPTS)
   {
-    $payload = $this->preparePayload($message);
+    // check for malicious calls and if so, try max times
+    if ($numRetries <= 0)
+    {
+        $numRetries = self::MAX_RETRY_ATTEMPTS;
+    }
+
+    $payload = $this->preparePayload($message, $numRetries);
+
+    $this->maxRetryAttempts = $numRetries;
 
     $this->queue->push(__CLASS__, $payload);
   }
@@ -399,11 +471,23 @@ class Client {
    */
   public function fire($job, array $data)
   {
-    $encoded = json_encode($data, JSON_UNESCAPED_UNICODE);
+    if($job->attempts() >= $data['metadata']['num_retries'])
+    {
+        $job->delete();
+    }
+    else
+    {
+      try
+      {
+          $this->messagePoster($data);
 
-    $this->guzzle->post($this->endpoint, ['body' => $encoded]);
-
-    $job->delete();
+          $job->delete();
+      }
+      catch(ClientException $e)
+      {
+          $job->release(self::RELEASE_WAIT_TIMEOUT);
+      }
+    }
   }
 
   /**
@@ -412,7 +496,7 @@ class Client {
    * @param \Maknz\Slack\Message $message The message to send
    * @return array
    */
-  public function preparePayload(Message $message)
+  public function preparePayload(Message $message, $numRetries = null)
   {
     $payload = [
       'text' => $message->getText(),
@@ -424,9 +508,14 @@ class Client {
       'mrkdwn' => $message->getAllowMarkdown()
     ];
 
+    if($numRetries)
+    {
+        $payload['metadata'] = ['num_retries' => $numRetries];
+    }
+
     if ($icon = $message->getIcon())
     {
-      $payload[$message->getIconType()] = $icon;
+        $payload[$message->getIconType()] = $icon;
     }
 
     $payload['attachments'] = $this->getAttachmentsAsArrays($message);

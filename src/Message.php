@@ -89,6 +89,12 @@ class Message {
   const ICON_TYPE_EMOJI = 'icon_emoji';
 
   /**
+   *
+   * @var integer
+   */
+  const MAX_RETRY_ATTEMPTS = 10;
+
+  /**
    * Instantiate a new Message
    *
    * @param \Maknz\Slack\Client $client
@@ -350,7 +356,7 @@ class Message {
     {
       $attachmentObject = new Attachment($attachment);
 
-      if ( ! isset($attachment['mrkdwn_in']))
+      if (! isset($attachment['mrkdwn_in']))
       {
         $attachmentObject->setMarkdownFields($this->getMarkdownInAttachments());
       }
@@ -405,28 +411,186 @@ class Message {
 
   /**
    * Send the message
-   *
+   * We try to attempt to send the message MAX_RETRY_ATTEMPTS times. If it fails,
+   * we will push the message into the queue. Another implementation could be
+   * a blocking implementation where the number of retries and the wait timeout could
+   * be specified through the method call. We are not going ahead with that at this
+   * point since it might end up blocking. We are also not waiting before retry for
+   * the same reason.
    * @param string $text The text to send
    * @return void
    */
-  public function send($text = null)
+  protected function _send($text = null, $numRetries = self::MAX_RETRY_ATTEMPTS)
   {
-    if ($text) $this->setText($text);
+    if($text)
+    {
+      $this->setText($text);
+    }
 
-    $this->client->sendMessage($this);
+    $isMessageSent = false;
+
+    $numAttempts = 0;
+
+    // check for malicious calls and if so, try once at least
+    if ($numRetries <= 0)
+    {
+      $numRetries = 1;
+    }
+
+    while(($numAttempts < $numRetries) and
+          ($isMessageSent === false))
+    {
+      try
+      {
+        $this->client->sendMessage($this);
+
+        $isMessageSent = true;
+      }
+      catch(Exception $e){}
+
+      $numAttempts += 1;
+    }
+
+    // push it into the queue
+    if(!$isMessageSent)
+    {
+      $this->queue($text, $numRetries);
+    }
   }
 
   /**
    * Queue the message
    * @param  string $text The text to send
+   * @param  integer $numRetries The number of times to retry on failure
    * @return void
    */
-  public function queue($text = null)
+  protected function _queue($text = null, $numRetries)
   {
-    if ($text) $this->setText($text);
+    if ($text)
+    {
+        $this->setText($text);
+    }
 
-    $this->client->queueMessage($this, $this->queue);
+    $this->client->queueMessage($this, $this->queue, $numRetries);
   }
+
+  /**
+   * @param string $headline
+   * @param array  $postData
+   * @param string $pretext
+   * @return $data
+   */
+   protected function buildMessage($headline, array $postData, $pretext)
+   {
+      // Fallback text for plaintext clients, like IRC
+      $data = [];
+
+      $data['fallback']   = $headline.'\n';
+
+      $data['fields']     = [];
+
+      $data['pretext']    = $pretext;
+
+      // If our data is nested, we need to flatten it
+      $postData = flatten_array($postData);
+
+      // attach for all extra fields
+      foreach($postData as $key => $value)
+      {
+          //  Fallback text for plaintext clients, like IRC
+          $data['fallback'] .= $key . ': ' . $value . '\n';
+
+          $data['color'] = isset($settings['color']) ? $settings['color'] : 'good';
+
+          $data['fields'][] = array(
+              'title' => $key,
+              'value' => $value,
+              'short' => true,
+          );
+      }
+
+      return $data;
+   }
+
+  /**
+   * @param string $headline
+   * @param array $postData actual post data
+   * @param array $settings post meta data - username, icon etc
+   * @param string $pretext
+   * @param bool $asQueue
+   * @param integer $numRetries
+   */
+  protected function messageHandler($headline, array $postData, array $settings = [],
+                                 $pretext = '', $asQueue = true, $numRetries = self::MAX_RETRY_ATTEMPTS)
+  {
+      $data = $this->buildMessage($headline, $postData, $pretext);
+
+      $settings['username'] = isset($settings['username']) ? $settings['username'] : null;
+
+      $settings['icon']     = isset($settings['icon']) ? $settings['icon'] : null;
+
+      if (isset($settings['channel']))
+      {
+          $this->to($settings['channel'])
+                  ->from($settings['username'])
+                  ->withIcon($settings['icon'])
+                  ->attach($data);
+      }
+      else
+      {
+          $this->attach($data);
+      }
+
+      if($asQueue)
+      {
+          $this->_queue($headline, $numRetries);
+      }
+      else
+      {
+          $this->_send($headline, $numRetries);
+      }
+
+  }
+
+  /**
+   * Queue the message for delivery later
+   * @param string $headline
+   * @param array $postData actual post data
+   * @param array $settings post meta data - username, icon etc
+   * @param string $pretext
+   * @param integer $numRetries
+   * @return void
+   */
+  public function queue($headline, array $postData, array $settings = [],
+                        $pretext = '',$numRetries = self::MAX_RETRY_ATTEMPTS)
+  {
+    if($this->client->getSlackStatus())
+    {
+      return $this->messageHandler($headline, $postData, $settings, $pretext, true, $numRetries);
+    }
+  }
+
+  /**
+   * Send the message immediately
+   * @param string $headline
+   * @param array $postData actual post data
+   * @param array $settings post meta data - username, icon etc
+   * @param string $pretext
+   * @param integer $numRetries
+   * @return void
+   */
+
+  public function send($headline, array $postData, array $settings = [],
+                       $pretext = '',$numRetries = self::MAX_RETRY_ATTEMPTS)
+  {
+    if($this->client->getSlackStatus())
+    {
+      return $this->messageHandler($headline, $postData, $settings, $pretext, false, $numRetries);
+
+    }
+
+  }
+
 
   /**
    * Sets the queue to be used
