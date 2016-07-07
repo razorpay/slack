@@ -2,6 +2,8 @@
 
 use Illuminate\Support\ServiceProvider;
 use GuzzleHttp\Client as Guzzle;
+use Illuminate\Queue\Capsule\Manager as QueueManager;
+use Queue;
 
 class SlackServiceProviderLaravel5 extends ServiceProvider {
 
@@ -13,6 +15,17 @@ class SlackServiceProviderLaravel5 extends ServiceProvider {
   public function boot()
   {
     $this->publishes([__DIR__ . '/config/config.php' => config_path('slack.php')]);
+  }
+
+  protected function getQueue()
+  {
+    $name = Queue::getFacadeRoot()->getDefaultDriver();
+    $config = $this->app['config']["queue.connections.{$name}"];
+
+    $queue = new QueueManager($this->app);
+    $queue->addConnection($config);
+
+    return $queue;
   }
 
   /**
@@ -38,10 +51,11 @@ class SlackServiceProviderLaravel5 extends ServiceProvider {
           'allow_markdown' => $app['config']->get('slack.allow_markdown'),
           'markdown_in_attachments' => $app['config']->get('slack.markdown_in_attachments')
         ],
+        $this->getQueue(),
         new Guzzle
       );
     });
-    
+
     $this->app->bind('Maknz\Slack\Client', 'maknz.slack');
   }
 
