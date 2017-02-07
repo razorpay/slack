@@ -2,6 +2,7 @@
 
 use App;
 use Queue;
+
 use GuzzleHttp\Client as Guzzle;
 use Illuminate\Queue\Capsule\Manager as QueueManager;
 use GuzzleHttp\Exception\ClientException;
