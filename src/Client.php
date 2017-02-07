@@ -184,7 +184,7 @@ class Client {
   {
     $app = App::getFacadeRoot();
 
-    if ($queueName === null)
+    if (empty($queueName) === true)
     {
       if (empty($app['config']->get('slack.queue_name')) === false)
       {
