@@ -193,7 +193,7 @@ class Client {
       }
       else
       {
-        $queueName = $app['config']->get('slack.queue_name');
+        $queueName = Queue::getFacadeRoot()->getDefaultDriver();;
       }
     }
 
