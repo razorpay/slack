@@ -161,7 +161,7 @@ class ClientFunctionalTest extends PHPUnit_Framework_TestCase {
     $this->assertSame($queue, $client->getQueueManager());
 
     $message = $client->createMessage()->setText('Message');
-    $client->queueMessage($message);
+    $client->queueMessage($message, 2);
 
   }
 

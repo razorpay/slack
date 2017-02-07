@@ -23,9 +23,12 @@ class SlackServiceProviderLaravel5 extends ServiceProvider {
     return $this->app['encrypter'];
   }
 
-  protected function getQueue()
+  protected function getQueue($name = null)
   {
-    $name = Queue::getFacadeRoot()->getDefaultDriver();
+    if (empty($name) === true)
+    {
+      $name = Queue::getFacadeRoot()->getDefaultDriver();
+    }
 
     $config = $this->app['config']["queue.connections.{$name}"];
 
@@ -62,7 +65,7 @@ class SlackServiceProviderLaravel5 extends ServiceProvider {
           'markdown_in_attachments' => $app['config']->get('slack.markdown_in_attachments'),
           'is_slack_enabled' => $app['config']->get('slack.is_slack_enabled'),
         ],
-        $this->getQueue(),
+        $this->getQueue($app['config']->get('slack.queue_name')),
         new Guzzle
       );
     });
