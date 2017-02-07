@@ -1,7 +1,9 @@
 <?php namespace Maknz\Slack;
 
+use App;
+use Queue;
 use GuzzleHttp\Client as Guzzle;
-use Illuminate\Queue\Capsule\Manager as Queue;
+use Illuminate\Queue\Capsule\Manager as QueueManager;
 use GuzzleHttp\Exception\ClientException;
 
 class Client {
@@ -117,7 +119,7 @@ class Client {
    * @param array $attributes
    * @return void
    */
-  public function __construct($endpoint, array $attributes = [], Queue $queue = null, Guzzle $guzzle = null)
+  public function __construct($endpoint, array $attributes = [], QueueManager $queue = null, Guzzle $guzzle = null)
   {
     $this->endpoint = $endpoint;
 
@@ -143,8 +145,10 @@ class Client {
 
     $this->queue = $queue;
 
-    if($this->queue !== null)
-      $this->queue->setAsGlobal();
+    if($this->queue === null)
+    {
+      $this->setQueue();
+    }
 
     $this->maxRetryAttempts = self::MAX_RETRY_ATTEMPTS;
   }
@@ -174,6 +178,35 @@ class Client {
   public function getEndpoint()
   {
     return $this->endpoint;
+  }
+
+  public function setQueue($queueName = null)
+  {
+    $app = App::getFacadeRoot();
+
+    if ($queueName === null)
+    {
+      if (empty($app['config']->get('slack.queue_name')) === false)
+      {
+        $queueName = $app['config']->get('slack.queue_name');
+      }
+      else
+      {
+        $queueName = $app['config']->get('slack.queue_name');
+      }
+    }
+
+    $config = $app['config']["queue.connections.{$queueName}"];
+
+    $queue = new QueueManager($app);
+
+    $queue->addConnection($config);
+
+    $queue->getContainer()->bind('Illuminate\Contracts\Encryption\Encrypter', 'encrypter');
+
+    $this->queue = $queue;
+
+    $this->queue->setAsGlobal();
   }
 
   /**
