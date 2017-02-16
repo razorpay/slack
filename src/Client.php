@@ -152,7 +152,7 @@ class Client {
    * @param string $queue Name of the queue
    * @return $this
    */
-  public function setQueue(QueueManager $queue)
+  public function setQueue(QueueContract $queue)
   {
     $this->queue = $queue;
 
