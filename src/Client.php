@@ -487,6 +487,11 @@ class Client
         $this->queue->push(static::class, $payload, $queue);
     }
 
+    public function handle()
+    {
+        $this->fire($this, $this->data);
+    }
+
     /**
      * Execute the message sending via a Queue
      *
