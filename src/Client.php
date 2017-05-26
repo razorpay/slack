@@ -5,6 +5,7 @@ namespace Razorpay\Slack;
 use GuzzleHttp\Client as Guzzle;
 use RuntimeException;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Queue\Jobs\Job;
 
 class Client
 {
@@ -189,7 +190,7 @@ class Client
      *
     * @return $this
     */
-    public function setQueue($queue)
+    public function setQueue($queue): self
     {
         $this->queue = $queue;
 
@@ -216,7 +217,7 @@ class Client
      *
      * @return \Razorpay\Slack\Message
     */
-    public function __call($name, $arguments)
+    public function __call($name, array $arguments)
     {
         $message = $this->createMessage();
 
@@ -242,7 +243,7 @@ class Client
      *
      * @return void
      */
-    public function setEndpoint($endpoint)
+    public function setEndpoint(string $endpoint)
     {
         $this->endpoint = $endpoint;
     }
@@ -264,7 +265,7 @@ class Client
      *
      * @return void
      */
-    public function setDefaultChannel($channel)
+    public function setDefaultChannel(string $channel)
     {
         $this->channel = $channel;
     }
@@ -286,7 +287,7 @@ class Client
      *
      * @return void
      */
-    public function setDefaultUsername($username)
+    public function setDefaultUsername(string $username)
     {
         $this->username = $username;
     }
@@ -308,7 +309,7 @@ class Client
      *
      * @return void
      */
-    public function setDefaultIcon($icon)
+    public function setDefaultIcon(string $icon)
     {
         $this->icon = $icon;
     }
@@ -332,7 +333,7 @@ class Client
      *
      * @return void
      */
-    public function setLinkNames($value)
+    public function setLinkNames(bool $value)
     {
         $this->linkNames = (boolean) $value;
     }
@@ -354,7 +355,7 @@ class Client
      *
      * @return void
      */
-    public function setUnfurlLinks($value)
+    public function setUnfurlLinks(bool $value)
     {
         $this->unfurlLinks = (boolean) $value;
     }
@@ -376,7 +377,7 @@ class Client
      *
      * @return void
      */
-    public function setUnfurlMedia($value)
+    public function setUnfurlMedia(bool $value)
     {
         $this->unfurlMedia = (boolean) $value;
     }
@@ -399,7 +400,7 @@ class Client
      * @param boolean $value value
      * @return void
      */
-    public function setAllowMarkdown($value)
+    public function setAllowMarkdown(bool $value)
     {
         $this->allowMarkdown = (boolean) $value;
     }
@@ -435,7 +436,7 @@ class Client
      *
      * @return void
      */
-    public function setSlackStatus($status)
+    public function setSlackStatus(bool $status)
     {
         $this->slackStatus = $status;
     }
@@ -455,7 +456,7 @@ class Client
      *
      * @return \Razorpay\Slack\Message
      */
-    public function createMessage()
+    public function createMessage(): Message
     {
         $message = new Message($this);
 
@@ -478,7 +479,7 @@ class Client
      * @param \Razorpay\Slack\Message $message message
      * @return void
      */
-    public function queueMessage(Message $message, $numRetries, $queue = null)
+    public function queueMessage(Message $message, int $numRetries, $queue = null)
     {
         $payload = $this->preparePayload($message, $numRetries);
 
@@ -495,7 +496,7 @@ class Client
      *
      * @return void
      */
-    public function fire($job, array $data)
+    public function fire(Job $job, array $data)
     {
         if ($job->attempts() >= $data['metadata']['num_retries'])
         {
@@ -523,7 +524,7 @@ class Client
      *
      * @return array
      */
-    public function preparePayload(Message $message, $numRetries = null)
+    public function preparePayload(Message $message, int $numRetries = null)
     {
         $payload = [
           'text'         => $message->getText(),
@@ -589,7 +590,7 @@ class Client
      *                                                different for different client calls between syncronous and
      *                                                asynchronous calls
      */
-    public function sendPayload($payload)
+    public function sendPayload(array $payload)
     {
         $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
 

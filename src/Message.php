@@ -114,7 +114,7 @@ class Message
      * @param string $text
      * @return $this
      */
-    public function setText($text)
+    public function setText(string $text): self
     {
         $this->text = $text;
 
@@ -137,7 +137,7 @@ class Message
      * @param string $channel
      * @return $this
      */
-    public function setChannel($channel)
+    public function setChannel($channel): self
     {
         $this->channel = $channel;
 
@@ -160,7 +160,7 @@ class Message
      * @param string $username
      * @return $this
      */
-    public function setUsername($username)
+    public function setUsername($username): self
     {
         $this->username = $username;
 
@@ -230,7 +230,7 @@ class Message
      * @param bool $value
      * @return void
      */
-    public function setAllowMarkdown($value)
+    public function setAllowMarkdown($value): self
     {
         $this->allow_markdown = (bool) $value;
 
@@ -242,7 +242,7 @@ class Message
      *
      * @return void
      */
-    public function enableMarkdown()
+    public function enableMarkdown(): self
     {
         $this->setAllowMarkdown(true);
 
@@ -254,7 +254,7 @@ class Message
      *
      * @return void
      */
-    public function disableMarkdown()
+    public function disableMarkdown(): self
     {
         $this->setAllowMarkdown(false);
 
@@ -279,7 +279,7 @@ class Message
      * @param array $fields
      * @return void
      */
-    public function setMarkdownInAttachments(array $fields)
+    public function setMarkdownInAttachments(array $fields): self
     {
         $this->markdown_in_attachments = $fields;
 
@@ -292,7 +292,7 @@ class Message
      * @param string $username
      * @return $this
      */
-    public function from($username)
+    public function from($username): self
     {
         $this->setUsername($username);
 
@@ -305,7 +305,7 @@ class Message
      * @param string $channel
      * @return $this
      */
-    public function to($channel)
+    public function to(string $channel): self
     {
         $this->setChannel($channel);
 
@@ -318,7 +318,7 @@ class Message
      * @param string $icon
      * @return $this
      */
-    public function withIcon($icon)
+    public function withIcon($icon): self
     {
         $this->setIcon($icon);
 
@@ -331,7 +331,7 @@ class Message
      * @param mixed $attachment
      * @return $this
      */
-    public function attach($attachment)
+    public function attach($attachment): self
     {
         if ($attachment instanceof Attachment) {
             $this->attachments[] = $attachment;
@@ -368,7 +368,7 @@ class Message
      * @param array $attachments
      * @return $this
      */
-    public function setAttachments(array $attachments)
+    public function setAttachments(array $attachments): self
     {
         $this->clearAttachments();
 
@@ -384,7 +384,7 @@ class Message
      *
      * @return $this
      */
-    public function clearAttachments()
+    public function clearAttachments(): self
     {
         $this->attachments = [];
 
@@ -406,8 +406,8 @@ class Message
      * @return void
      */
     protected function sendMessage(
-        $numRetries = self::MAX_RETRY_ATTEMPTS,
-        $queue = null)
+        int $numRetries = self::MAX_RETRY_ATTEMPTS,
+        string $queue = null)
     {
         $isMessageSent = false;
 
@@ -449,8 +449,8 @@ class Message
      * @return void
      */
     protected function queueMessage(
-        $numRetries = self::MAX_RETRY_ATTEMPTS,
-        $queue = null)
+        int $numRetries = self::MAX_RETRY_ATTEMPTS,
+        string $queue = null)
     {
         $this->client->queueMessage($this, $numRetries, $queue);
     }
@@ -462,7 +462,7 @@ class Message
     *
     * @return $data
     */
-    protected function buildMessage($headline, array $postData, $pretext, array $settings)
+    protected function buildMessage(string $headline, array $postData, string $pretext, array $settings): array
     {
         // Fallback text for plaintext clients, like IRC
         $data = [
@@ -503,13 +503,13 @@ class Message
     * @param string  $queue Queue on which message has to be sent
     */
     protected function messageHandler(
-        $headline,
+        string $headline,
         array $postData,
         array $settings = [],
-        $pretext = '',
-        $asQueue = true,
-        $numRetries = self::MAX_RETRY_ATTEMPTS,
-        $queue = null)
+        string $pretext = '',
+        bool $asQueue = true,
+        int $numRetries = self::MAX_RETRY_ATTEMPTS,
+        string $queue = null)
     {
         $data = $this->buildMessage($headline, $postData, $pretext, $settings);
 
@@ -563,12 +563,12 @@ class Message
      * @return void
      */
     public function queue(
-        $headline,
+        string $headline,
         array $postData = [],
         array $settings = [],
-        $pretext = '',
-        $numRetries = self::MAX_RETRY_ATTEMPTS,
-        $queue = null)
+        string $pretext = '',
+        int $numRetries = self::MAX_RETRY_ATTEMPTS,
+        string $queue = null)
     {
         if ($this->client->getSlackStatus())
         {
@@ -584,12 +584,12 @@ class Message
     }
 
     public function onQueue(
-        $queue,
-        $headline,
+        string $queue,
+        string $headline,
         array $postData = [],
         array $settings = [],
-        $pretext = '',
-        $numRetries = self::MAX_RETRY_ATTEMPTS)
+        string $pretext = '',
+        int $numRetries = self::MAX_RETRY_ATTEMPTS)
     {
         $this->queue($headline, $postData, $settings, $pretext, $numRetries, $queue);
     }
@@ -606,11 +606,11 @@ class Message
      * @return void
      */
     public function send(
-        $headline,
+        string $headline,
         array $postData = [],
         array $settings = [],
-        $pretext = '',
-        $numRetries = self::MAX_RETRY_ATTEMPTS)
+        string $pretext = '',
+        int $numRetries = self::MAX_RETRY_ATTEMPTS)
     {
         if ($this->client->getSlackStatus())
         {
@@ -629,7 +629,7 @@ class Message
      *
      * @return array
     */
-    protected function flattenArray($array, $separator = '.', $prefix = '')
+    protected function flattenArray(array $array, string $separator = '.', string $prefix = ''): array
     {
         $result = [];
 

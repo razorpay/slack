@@ -64,7 +64,7 @@ class ActionConfirmation
     /**
      * @return string
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -73,7 +73,7 @@ class ActionConfirmation
      * @param string $title
      * @return ActionConfirmation
      */
-    public function setTitle($title)
+    public function setTitle(string $title): self
     {
         $this->title = $title;
 
@@ -83,7 +83,7 @@ class ActionConfirmation
     /**
      * @return string
      */
-    public function getText()
+    public function getText(): string
     {
         return $this->text;
     }
@@ -92,7 +92,7 @@ class ActionConfirmation
      * @param string $text
      * @return ActionConfirmation
      */
-    public function setText($text)
+    public function setText(string $text): self
     {
         $this->text = $text;
 
@@ -102,7 +102,7 @@ class ActionConfirmation
     /**
      * @return string
      */
-    public function getOkText()
+    public function getOkText(): string
     {
         return $this->okText;
     }
@@ -111,7 +111,7 @@ class ActionConfirmation
      * @param string $okText
      * @return ActionConfirmation
      */
-    public function setOkText($okText)
+    public function setOkText(string $okText): self
     {
         $this->okText = $okText;
 
@@ -121,7 +121,7 @@ class ActionConfirmation
     /**
      * @return string
      */
-    public function getDismissText()
+    public function getDismissText(): string
     {
         return $this->dismissText;
     }
@@ -130,7 +130,7 @@ class ActionConfirmation
      * @param string $dismissText
      * @return ActionConfirmation
      */
-    public function setDismissText($dismissText)
+    public function setDismissText(string $dismissText): self
     {
         $this->dismissText = $dismissText;
 
