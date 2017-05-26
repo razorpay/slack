@@ -66,7 +66,7 @@ class AttachmentField
      * @param string $title
      * @return $this
      */
-    public function setTitle($title)
+    public function setTitle(string $title): self
     {
         $this->title = $title;
 
@@ -89,7 +89,7 @@ class AttachmentField
      * @param string $value
      * @return $this
      */
-    public function setValue($value)
+    public function setValue(string $value): self
     {
         $this->value = $value;
 
@@ -114,7 +114,7 @@ class AttachmentField
      * @param string $value
      * @return $this
      */
-    public function setShort($value)
+    public function setShort(string $value): self
     {
         $this->short = (bool) $value;
 

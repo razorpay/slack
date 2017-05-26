@@ -472,7 +472,7 @@ class ClientFunctionalTest extends PHPUnit_Framework_TestCase
         $client->fire($job, $data);
     }
 
-    protected function getNetworkStubbedClient()
+    protected function getNetworkStubbedClient(): Client
     {
         $guzzle = Mockery::mock('GuzzleHttp\Client');
 
@@ -485,7 +485,7 @@ class ClientFunctionalTest extends PHPUnit_Framework_TestCase
         return new Client('http://fake.endpoint', [], $queue, $guzzle);
     }
 
-    protected function getNetworkStubbedClientAndThrowException($guzzleCount = 1, $queueCount = 1)
+    protected function getNetworkStubbedClientAndThrowException(int $guzzleCount = 1, int $queueCount = 1): Client
     {
         $this->guzzle = Mockery::mock('GuzzleHttp\Client');
 
@@ -498,7 +498,7 @@ class ClientFunctionalTest extends PHPUnit_Framework_TestCase
         return new Client('http://fake.endpoint', [], $this->queue, $this->guzzle);
     }
 
-    protected function getNetworkStubbedClientAndThrowClientException($guzzleCount = 1, $queueCount = 1)
+    protected function getNetworkStubbedClientAndThrowClientException(int $guzzleCount = 1, int $queueCount = 1): Client
     {
         $this->guzzle = Mockery::mock('GuzzleHttp\Client');
 

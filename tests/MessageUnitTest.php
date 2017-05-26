@@ -193,7 +193,7 @@ class MessageUnitTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('http://www.fake.com/someimage.png', $message->getIcon());
     }
 
-    protected function getMessage()
+    protected function getMessage(): Message
     {
         return new Message(Mockery::mock('Razorpay\Slack\Client'));
     }

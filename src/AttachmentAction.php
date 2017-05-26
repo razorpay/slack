@@ -105,7 +105,7 @@ class AttachmentAction
      * @param string $name
      * @return AttachmentAction
      */
-    public function setName($name)
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -124,7 +124,7 @@ class AttachmentAction
      * @param string $text
      * @return AttachmentAction
      */
-    public function setText($text)
+    public function setText(string $text): self
     {
         $this->text = $text;
 
@@ -143,7 +143,7 @@ class AttachmentAction
      * @param string $style
      * @return AttachmentAction
      */
-    public function setStyle($style)
+    public function setStyle(string $style): self
     {
         $this->style = $style;
 
@@ -162,7 +162,7 @@ class AttachmentAction
      * @param string $type
      * @return AttachmentAction
      */
-    public function setType($type)
+    public function setType(string $type): self
     {
         $this->type = $type;
 
@@ -181,7 +181,7 @@ class AttachmentAction
      * @param string $value
      * @return AttachmentAction
      */
-    public function setValue($value)
+    public function setValue(string $value): self
     {
         $this->value = $value;
 
@@ -200,7 +200,7 @@ class AttachmentAction
      * @param ActionConfirmation|array $confirm
      * @return AttachmentAction
      */
-    public function setConfirm($confirm)
+    public function setConfirm($confirm): self
     {
         if ($confirm instanceof ActionConfirmation)
         {
