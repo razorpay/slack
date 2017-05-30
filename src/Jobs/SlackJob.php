@@ -2,6 +2,7 @@
 
 namespace Razorpay\Slack\Jobs;
 
+use App;
 use Razorpay\Slack\Client;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
