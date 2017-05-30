@@ -2,12 +2,16 @@
 
 namespace Razorpay\Slack;
 
-use GuzzleHttp\Client as Guzzle;
 use RuntimeException;
+use GuzzleHttp\Client as Guzzle;
+use Razorpay\Slack\Jobs\SlackJob;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Client
 {
+    use DispatchesJobs;
+
     /**
      * The Slack incoming webhook endpoint.
 
@@ -482,9 +486,11 @@ class Client
     {
         $payload = $this->preparePayload($message, $numRetries);
 
-        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        $job = new SlackJob($payload);
 
-        $this->queue->push(static::class, $payload, $queue);
+        $job->connection($queue);
+
+        $this->dispatch($job);
     }
 
     /**
