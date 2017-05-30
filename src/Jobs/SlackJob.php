@@ -19,7 +19,7 @@ class SlackJob implements ShouldQueue
 
     const RELEASE_WAIT_TIMEOUT = 120;
 
-    public function __construct(array $data)
+    public function __construct(array $payload)
     {
         $this->payload = $payload;
     }
