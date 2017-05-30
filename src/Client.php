@@ -488,8 +488,6 @@ class Client
 
         $job = new SlackJob($payload);
 
-        $job->onConnection($this->getQueue());
-
         $this->dispatch($job);
     }
 
