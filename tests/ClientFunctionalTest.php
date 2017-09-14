@@ -15,6 +15,7 @@ class ClientFunctionalTest extends PHPUnit_Framework_TestCase
             'username' => 'Archer',
             'channel' => '@regan',
             'text' => 'Message',
+            'icon_emoji' => ':poop',
             'link_names' => 0,
             'unfurl_links' => false,
             'unfurl_media' => true,
