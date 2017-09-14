@@ -536,6 +536,8 @@ class Client
           'unfurl_media' => $this->getUnfurlMedia(),
           'mrkdwn'       => $message->getAllowMarkdown()
         ];
+        
+        $payload = array_filter($payload);
 
         if ($numRetries)
         {
