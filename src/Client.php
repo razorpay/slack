@@ -537,8 +537,16 @@ class Client
           'mrkdwn'       => $message->getAllowMarkdown()
         ];
         
-        $payload = array_filter($payload);
-
+        if ($payload['icon_url'] === null)
+        {
+            unset($payload['icon_url']);
+        }
+        
+        if ($payload['icon_emoji'] === null)
+        {
+            unset($payload['icon_emoji']);
+        }
+        
         if ($numRetries)
         {
             $payload['metadata'] = ['num_retries' => $numRetries];
