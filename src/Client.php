@@ -529,6 +529,8 @@ class Client
           'text'         => $message->getText(),
           'channel'      => $message->getChannel(),
           'username'     => $message->getUsername(),
+          'icon_url'     => $message->getIconType() == Message::ICON_TYPE_URL ? $message->getIcon() : null,
+          'icon_emoji'   => $message->getIconType() == Message::ICON_TYPE_EMOJI ? $message->getIcon() : null,
           'link_names'   => $this->getLinkNames() ? 1 : 0,
           'unfurl_links' => $this->getUnfurlLinks(),
           'unfurl_media' => $this->getUnfurlMedia(),
