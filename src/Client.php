@@ -533,7 +533,12 @@ class Client
           'unfurl_media' => $this->getUnfurlMedia(),
           'mrkdwn'       => $message->getAllowMarkdown()
         ];
-
+        
+        if ($icon = $message->getIcon())
+        {
+            $payload[$message->getIconType()] = $icon;
+        }
+        
         if ($numRetries)
         {
             $payload['metadata'] = ['num_retries' => $numRetries];
