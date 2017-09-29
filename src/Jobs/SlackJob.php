@@ -8,11 +8,11 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Bus\Queueable;
-//use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Foundation\Bus\Dispatchable;
 
 class SlackJob implements ShouldQueue
 {
-    use InteractsWithQueue, SerializesModels, Queueable;
+    use InteractsWithQueue, SerializesModels, Queueable, Dispatchable;
 
     protected $payload;
 

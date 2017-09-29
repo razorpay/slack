@@ -6,12 +6,9 @@ use RuntimeException;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Slack\Jobs\SlackJob;
 use GuzzleHttp\Exception\ClientException;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Client
 {
-    use DispatchesJobs;
-
     /**
      * The Slack incoming webhook endpoint.
 
@@ -486,9 +483,7 @@ class Client
     {
         $payload = $this->preparePayload($message, $numRetries);
 
-        $job = new SlackJob($payload);
-
-        $this->dispatch($job);
+        SlackJob::dispatch($payload);
     }
 
     /**
