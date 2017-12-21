@@ -16,7 +16,7 @@ class SlackJob implements ShouldQueue
 
     protected $payload;
 
-    const MAX_RETRY_ATTEMPTS = 10;
+    const MAX_RETRY_ATTEMPTS = 3;
 
     const RELEASE_WAIT_TIMEOUT = 120;
 
