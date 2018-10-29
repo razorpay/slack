@@ -2,8 +2,9 @@
 
 namespace Razorpay\Slack;
 
-use GuzzleHttp\Client as Guzzle;
 use RuntimeException;
+use GuzzleHttp\Client as Guzzle;
+use Razorpay\Slack\Jobs\SlackJob;
 use GuzzleHttp\Exception\ClientException;
 
 class Client
@@ -482,9 +483,7 @@ class Client
     {
         $payload = $this->preparePayload($message, $numRetries);
 
-        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
-
-        $this->queue->push(static::class, $payload, $queue);
+        SlackJob::dispatch($payload);
     }
 
     /**
